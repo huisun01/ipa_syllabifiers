@@ -3,7 +3,7 @@ A Python package for syllabifying text data in English or Polish
 
 ## Description
 
-This Python package contains programs that can extract syllabic cues from text data in English or Polish, whether the data consist of a word, a sentence or a whole corpus. The resulting syllabic cues can be used as inputs to train language learning models that accepts data in an 'associative learning'  format (each example that is fed to the model is an event made up of some cues that trigger some outcomes) such as the naive discriminative learning (NDL; https://pyndl.readthedocs.io/en/latest/index.html) or the models provided in the Deep text modelling package (DTM; https://github.com/Adnane017/Deep_text_modelling). One motivation behind the developement of this package is a study that aims to compare how well orthographic and phonetic methods can explain response time in reading.   
+This Python package contains programs that can extract syllabic cues from text data in English or Polish, whether the data consist of a word, a sentence or a whole corpus. The resulting syllabic cues can be used as inputs to train language learning models that accepts data in an 'associative learning' style (i.e. each training example that is fed to the model is an event made up of some cues that trigger some outcomes) such as the naive discriminative learning (NDL; https://pyndl.readthedocs.io/en/latest/index.html) or the models provided in the Deep text modelling package (DTM; https://github.com/Adnane017/Deep_text_modelling). One motivation behind the developement of this package is a study that aims to compare how well orthographic and phonetic methods can explain response time in reading.   
 
 Our syllabication method consists of two stages: 
 
