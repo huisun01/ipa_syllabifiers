@@ -134,7 +134,7 @@ def regex_pol_ipa():
 # Add a cach: allow to cache the results to avoid re-applying the function multiple times when 
 # the results have already been generated
 @lru_cache(maxsize=None) 
-def syllabify(word, ipa_converter = english_to_ipa, syllable_pattern = syllable_pattern_en, add_boundaries=True):
+def syllabify(word, ipa_converter, syllable_pattern, add_boundaries=True):
 
     """Extracts syllables from English word.
 
