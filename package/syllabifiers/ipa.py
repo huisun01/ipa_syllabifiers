@@ -87,21 +87,26 @@ def regex_en_ipa():
     # syllable starts after beginning of word or previous vowel/diphtongue
     # consists of a vowel/diphtongue preceded/followed by 0 or more consonsants
     # ends before next vowel/diphtongue or end of word
-    pattern = f"""(?=  # ? Look ahead to make sure to match a substring without removing it for later checkes
-              (?<=[{vowels}]|{diphtongues}|^) # ? to not return the result yet | <: says look behind 
-              ([{consonants}]* (?:[{vowels}]|{diphtongues}) [{consonants}]*)
-              (?:[{vowels}]|{diphtongues}|$)
-              ) 
-              """
+    pattern_syllable = f"""(?=  # ? Look ahead to make sure to match a substring without removing it for later checkes
+                            (?<=[{vowels}]|{diphtongues}|^) # ? to not return the result yet | <: says look behind 
+                            ([{consonants}]* (?:[{vowels}]|{diphtongues}) [{consonants}]*)
+                            (?:[{vowels}]|{diphtongues}|$))
+                        """
+    # add pattern to match words made of only consonants
+    pattern_consonant = f"""(?<=^)(?:[{consonants}])+(?:$)"""
 
-    syllables = regex.compile(pattern, regex.VERBOSE)
-    return syllables
+    syllables = regex.compile(pattern_syllable, regex.VERBOSE)
+    consonants = regex.compile(pattern_consonant, regex.VERBOSE)
+
+    return syllables, consonants
 
 # Polish version 
 def regex_pol_ipa():
+
     """Returns compiled regular expression that matches
     overlapping syllables in English words transcribed to IPA
     """
+    
     vowels = 'aɛiɨɔu' 
     special_vowels = "|".join(('ɛ̃','ɔ̃'))
     consonants = 'ɕʑʐɣɲʂxwlmvpɡŋszbkdrnjtf' ## To CHECK
@@ -110,15 +115,20 @@ def regex_pol_ipa():
     # syllable starts after beginning of word or previous vowel
     # consists of a vowel preceded/followed by 0 or more consonsants
     # ends before next vowel/diphtongue or end of word
-    pattern = f"""(?=  # ? Look ahead to make sure to match a substring without removing it for later checkes
-              (?<=[{vowels}]|{special_vowels}|^) # ? to not return the result yet | <: says look behind 
-              ([{consonants}|{special_consonants}]* (?:[{vowels}]|{special_vowels}) [{consonants}|{special_consonants}]*)
-              (?:[{vowels}]|{special_vowels}|$)
-              ) 
-              """
+    pattern_syllable = f"""(?=  # ? Look ahead to make sure to match a substring without removing it for later checkes
+                           (?<=[{vowels}]|{special_vowels}|^) # ? to not return the result yet | <: says look behind 
+                           ([{consonants}|{special_consonants}]* (?:[{vowels}]|{special_vowels}) [{consonants}|{special_consonants}]*)
+                           (?:[{vowels}]|{special_vowels}|$)
+                           ) 
+                        """
 
-    syllables = regex.compile(pattern, regex.VERBOSE)
-    return syllables
+    # add pattern to match words made of only consonants
+    pattern_consonant = f"""(?<=^)(?:[{consonants}|{special_consonants}])+(?:$)"""
+
+    syllables = regex.compile(pattern_syllable, regex.VERBOSE)
+    consonants = regex.compile(pattern_consonant, regex.VERBOSE)
+
+    return syllables, consonants
     
 ### Main function that syllabies a single word
 # Add a cach: allow to cache the results to avoid re-applying the function multiple times when 
@@ -134,8 +144,9 @@ def syllabify(word, ipa_converter, syllable_pattern, add_boundaries=True):
         Word to extract syllables from
     ipa_converter : function
         Function that convert a string to ipa (for Polish, use polish_to_ipa)
-    syllable_pattern : compiled regular expression
-        Regular expression that matches syllables in a word
+    syllable_pattern : tuple 
+        Tuple of two regular expressions. The first matches syllables in a word. 
+        The second matches words made of only consonants 
     add_boundaries : bool
         hashtags are added as word boundaries to outermost syllables
 
@@ -145,8 +156,18 @@ def syllabify(word, ipa_converter, syllable_pattern, add_boundaries=True):
         Syllables separated by underscores
     """
 
+    # syllable_pattern contains two patterns 
+    regular_pattern = syllable_pattern[0] # regular form of a syllable
+    consonant_pattern = syllable_pattern[1] # if the word is made of only consonants
+
+    # convert to ipa
     string = ipa_converter(word)
-    syllables = "_".join(syllable_pattern.findall(string))
+
+    syllable_matches = regular_pattern.findall(string) 
+    if syllable_matches:
+        syllables = "_".join(syllable_matches)
+    else:
+        syllables = "_".join(consonant_pattern.findall(string))
 
     if add_boundaries:
         syllables = "#" + syllables + "#"
@@ -180,8 +201,9 @@ def syllabify_line(line,
         Line to syllabify (typically read from corpus)
     ipa_converter: function
         english_to_ipa or polish_to_ipa
-    syllable_pattern : compiled regular expression
-        Regular expression that matches syllables in a word
+    syllable_pattern : tuple 
+        Tuple of two regular expressions. The first matches syllables in a word. 
+        The second matches words made of only consonants 
     not_symbol_pattern : compiled regular expression
         Regular expression that matches disallowed characters (e.g. punctuation)
     add_boundaries : bool
@@ -249,8 +271,9 @@ def syllabify_corpus_generator(lines,
         Lines to be syllabified, typically an open corpus file
     ipa_converter : function
         Function that convert a string to ipa (for Polish, use polish_to_ipa)
-    syllable_pattern : compiled regular expression
-        Regular expression that matches syllables in a word
+    syllable_pattern : tuple 
+        Tuple of two regular expressions. The first matches syllables in a word. 
+        The second matches words made of only consonants 
     not_symbol_pattern : compiled regular expression
         Regular expression that matches disallowed characters (e.g. punctuation)
     add_boundaries : bool
@@ -299,8 +322,9 @@ def syllabify_corpus(corpus_path,
         Path of the event file with syllabic cues
     ipa_converter : function
         Function that convert a string to ipa (for Polish, use polish_to_ipa)
-    syllable_pattern : compiled regular expression
-        Regular expression that matches syllables in a word
+    syllable_pattern : tuple 
+        Tuple of two regular expressions. The first matches syllables in a word. 
+        The second matches words made of only consonants 
     not_symbol_pattern : compiled regular expression
         Regular expression that matches disallowed characters (e.g. punctuation)
     add_boundaries : bool
@@ -348,32 +372,4 @@ def corpus_first_lines(corpus, n):
             yield next(corpus)
         except StopIteration:
             return
-
-def test_corpus_runtime(corpus_path, numlines, ipa_converter, syllable_pattern, 
-                        not_symbol_pattern, numcores, chunksize):
-
-    """Times syllabifying the first numlines lines of corpus_path.
-    """
-
-    with open(corpus_path) as corpus:
-
-        start = timeit.time.time()
-        sample = corpus_first_lines(corpus, numlines)
-        results = syllabify_parallel(lines = sample,
-                                     ipa_converter = ipa_converter,
-                                     syllable_pattern = syllable_pattern,
-                                     not_symbol_pattern = not_symbol_pattern,    
-                                     add_boundaries = True,
-                                     as_event = True,
-                                     numcores = numcores,
-                                     chunksize = chunksize,
-                                     )
-
-        for i,_ in enumerate(results, start=1):
-            if not i % 10000:
-                took = timeit.time.time() - start
-                took = round(took / 60, 2)
-                sys.stdout.write(f"Processed {i} lines in {took} minutes!\r")
-                sys.stdout.flush()
-
 
