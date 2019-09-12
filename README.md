@@ -143,7 +143,7 @@ with gzip.open(S2L_EVENTS_POL, 'rt', encoding='utf-8') as e:
 
 ## Examples
 
-- [Syllabification of English texts](https://nbviewer.jupyter.org/github/Adnane017/ipa_syllabifiers/blob/master/illustrative_examples/English_syllabification_examples.ipynb)
+- [Syllabification of English texts](https://nbviewer.jupyter.org/github/Adnane017/ipa_syllabifiers/blob/master/illustrative_examples/English_syllabification_example.ipynb)
 
 - [Syllabification of Polish texts](https://nbviewer.jupyter.org/github/Adnane017/ipa_syllabifiers/blob/master/illustrative_examples/Polish_syllabification_examples.ipynb)
 
